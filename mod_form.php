@@ -15,62 +15,32 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package   mod_forum
- * @copyright Jamie Pratt <me@jamiep.org>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
-
-require_once ($CFG->dirroot.'/course/moodleform_mod.php');
-
-class mod_evaluationoforum_mod_form extends moodleform_mod {
-
-    function defintion(){
-        global $CFG,$COURSE,$DB;
-
+ 
+require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot.'/mod/evaluationforum/lib.php');
+ 
+class mod_evaluationforum_mod_form extends moodleform_mod {
+ 
+    function definition() {
+        global $CFG, $DB, $OUTPUT;
+ 
         $mform =& $this->_form;
-    }
-    //--------------------------------
-
-    $mform->addElement('header','general',get_string('general','form'));
-
-    $mform->addElement('text','name',get_string('forumname','evalationforum'),array('size'=>'64'))
-
-    if (!empty($CFG->formatstringstriptags)) {
+ 
+        $mform->addElement('text', 'name', get_string('activityname', 'certificate'), array('size'=>'64'));
         $mform->setType('name', PARAM_TEXT);
-    } else {
-        $mform->setType('name', PARAM_CLEANHTML);
+        $mform->addRule('name', null, 'required', null, 'client');
+ 
+        $ynoptions = array(0 => get_string('no'),
+                           1 => get_string('yes'));
+        $mform->addElement('select', 'usecode', get_string('usecode', 'certificate'), $ynoptions);
+        $mform->setDefault('usecode', 0);
+        $mform->addHelpButton('usecode', 'usecode', 'certificate');
+ 
+        $this->standard_coursemodule_elements();
+ 
+        $this->add_action_buttons();
     }
-
-    $mform->addRule('name', null, 'required', null, 'client');
-    $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
-
-    $this->standard_intro_elements(get_string('forumintro', 'evaluationforum'));
-
-    $forumtypes = forum_get_forum_types();
-
-    core_collator::asort($forumtypes, core_collator::SORT_STRING);
-    $mform->addElement('select', 'type', get_string('forumtype', 'evaluationforum'), $forumtypes);
-    $mform->addHelpButton('type', 'forumtype', 'evaluationforum');
-    $mform->setDefault('type', 'general');
-
-    $mform->addElement('header', 'availability', get_string('availability', 'evaluationforum'));
-
-    $name = get_string('duedate', 'evaluationforum');
-    $mform->addElement('date_time_selector', 'duedate', $name, array('optional' => true));
-    $mform->addHelpButton('duedate', 'duedate', 'forum');
-
-    $name = get_string('cutoffdate', 'evaluationforum');
-    $mform->addElement('date_time_selector', 'cutoffdate', $name, array('optional' => true));
-    $mform->addHelpButton('cutoffdate', 'cutoffdate', 'forum');
-
-
-    $this->standard_coursemodule_elements();
-
-    $this->add_action_buttons();
-
 }
